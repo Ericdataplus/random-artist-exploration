@@ -252,6 +252,17 @@
             margin-top: 1rem;
         }
         
+        .shortcut-tip {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 1rem;
+            text-align: center;
+            padding: 0.5rem;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 5px;
+            display: block;
+        }
+        
         @media (max-width: 768px) {
             header {
                 padding: 0.8rem 0;
@@ -328,6 +339,10 @@
                 padding: 0.8rem;
                 font-size: 0.9rem;
             }
+            
+            .shortcut-tip {
+                display: none; /* Hide shortcuts tip on mobile */
+            }
         }
         
         @media (max-width: 480px) {
@@ -362,6 +377,10 @@
     </header>
     
     <main>
+        <div class="shortcut-tip">
+            Keyboard shortcuts: <strong>Space</strong> for new artist, <strong>Backspace</strong> to go back
+        </div>
+        
         <div class="artist-container">
             <div class="artist-name" id="artistName">Click to discover an artist</div>
             
@@ -667,6 +686,26 @@
         generateBtn.addEventListener('click', generateRandomArtist);
         searchBtn.addEventListener('click', searchGoogleImages);
         backBtn.addEventListener('click', goBackToPreviousArtist);
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Prevent keyboard shortcuts when user is typing in an input field
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            // Space bar to discover a new random artist
+            if (event.code === 'Space' || event.keyCode === 32) {
+                event.preventDefault(); // Prevent page scrolling
+                generateRandomArtist();
+            }
+            
+            // Backspace to go back to previous artist
+            if ((event.code === 'Backspace' || event.keyCode === 8) && !backBtn.disabled) {
+                event.preventDefault(); // Prevent browser back navigation
+                goBackToPreviousArtist();
+            }
+        });
         
         // Initialize
         fetchData();

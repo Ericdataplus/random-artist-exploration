@@ -263,44 +263,58 @@
             display: block;
         }
         
+        .mobile-button-bar {
+            display: none; /* Hidden by default, shown only on mobile */
+        }
+        
         @media (max-width: 768px) {
             header {
                 padding: 0.8rem 0;
             }
             
+            /* Hide the artist name on mobile */
             .artist-name {
-                font-size: 1.8rem;
-                min-height: 2.5rem;
-                margin-bottom: 1rem;
+                display: none;
             }
             
+            /* Hide the regular button container on mobile */
             .button-container {
-                flex-direction: column;
-                gap: 0.5rem;
+                display: none;
             }
             
-            button {
-                width: 100%;
-                padding: 0.7rem 1rem;
-                font-size: 0.95rem;
-            }
-            
-            /* Reorder buttons on mobile */
-            .button-container {
+            /* Show the mobile button bar */
+            .mobile-button-bar {
                 display: flex;
-                flex-direction: column;
+                position: fixed;
+                bottom: 20px;
+                left: 10px;
+                right: 10px;
+                background-color: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+                padding: 0.8rem;
+                z-index: 100;
+                justify-content: space-around;
+                border-radius: 10px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
             }
             
-            #generateBtn {
-                order: 1;
+            .mobile-button-bar button {
+                flex: 1;
+                margin: 0 0.4rem;
+                padding: 0.8rem 0.5rem;
+                font-size: 0.95rem;
+                border-radius: 6px;
+                font-weight: bold;
             }
             
-            #backBtn {
-                order: 2;
+            /* Add padding to the bottom of the page to account for the fixed button bar */
+            body {
+                padding-bottom: 100px;
             }
             
-            #searchBtn {
-                order: 3;
+            /* Adjust the footer to appear above the button bar */
+            footer {
+                margin-bottom: 100px;
             }
             
             main {
@@ -308,14 +322,15 @@
             }
             
             .artist-container {
-                padding: 1rem;
-                margin: 0.5rem 0;
+                padding: 0.8rem;
+                margin: 0.3rem 0;
                 width: 100%;
                 max-width: 100%;
             }
             
             .history-container {
                 margin-top: 1.5rem;
+                margin-bottom: 2rem;
             }
             
             .history-title {
@@ -352,15 +367,29 @@
             
             main {
                 padding-top: 0; /* Remove top padding since header is gone */
+                padding-left: 0; /* Remove left padding */
+                padding-right: 0; /* Remove right padding */
             }
             
             .artist-container {
                 margin-top: 0; /* Remove top margin since header is gone */
-                border-radius: 0; /* Remove top border radius for full-width look */
+                margin-left: 0; /* Remove left margin */
+                margin-right: 0; /* Remove right margin */
+                border-radius: 0; /* Remove border radius for full-width look */
+                padding-top: 0; /* Remove top padding */
+                padding-bottom: 0.5rem; /* Reduced padding at bottom */
+                box-shadow: none; /* Remove shadow for cleaner look */
             }
             
             .artist-name {
                 font-size: 1.5rem;
+                margin-bottom: 0.3rem;
+                min-height: 1.8rem;
+            }
+            
+            .image-container {
+                margin-top: 0; /* Remove top margin */
+                border-radius: 0; /* Remove border radius */
             }
             
             footer {
@@ -400,6 +429,13 @@
             <div class="history-list" id="historyList">
                 <!-- History items will be added here -->
             </div>
+        </div>
+        
+        <!-- Mobile button bar (fixed at bottom of screen) -->
+        <div class="mobile-button-bar">
+            <button id="mobileGenerateBtn" class="primary">New Artist</button>
+            <button id="mobileBackBtn" class="secondary" disabled>Back</button>
+            <button id="mobileSearchBtn" class="secondary">Google</button>
         </div>
     </main>
     
@@ -482,7 +518,7 @@
             searchBtn.disabled = false;
             
             // Enable back button if we have history
-            backBtn.disabled = history.length <= 1;
+            updateBackButtonStates();
             
             // Automatically load images
             loadSampleImages();
@@ -515,7 +551,8 @@
                 try {
                     // Create an iframe to embed Google Image search results
                     const searchQuery = encodeURIComponent(`${artist} artist artwork`);
-                    const googleImagesUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&igu=1`;
+                    // Add 'tbm=isch&tbs=isz:m' to show medium-sized images (more visible at once)
+                    const googleImagesUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&tbs=isz:m&igu=1`;
                     
                     // Clear container
                     imageContainer.innerHTML = '';
@@ -524,10 +561,10 @@
                     const iframeContainer = document.createElement('div');
                     iframeContainer.style.width = '100%';
                     iframeContainer.style.height = '80vh';
-                    iframeContainer.style.minHeight = window.innerWidth <= 768 ? '500px' : '900px'; // Adjust height for mobile
+                    iframeContainer.style.minHeight = window.innerWidth <= 768 ? '550px' : '900px'; // Increased from 500px for mobile
                     iframeContainer.style.overflow = 'hidden';
-                    iframeContainer.style.borderRadius = '8px';
-                    iframeContainer.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                    iframeContainer.style.borderRadius = window.innerWidth <= 480 ? '0' : '8px'; // No border radius on small mobile
+                    iframeContainer.style.boxShadow = window.innerWidth <= 480 ? 'none' : '0 4px 6px rgba(0, 0, 0, 0.1)'; // No shadow on small mobile
                     
                     // Create iframe
                     const iframe = document.createElement('iframe');
@@ -537,30 +574,36 @@
                     iframe.style.border = 'none';
                     iframe.title = `${artist} artwork images`;
                     
-                    // Add header text
+                    // Add header text - make it more prominent on mobile since it's the only place showing the artist name
                     const headerText = document.createElement('div');
                     headerText.style.textAlign = 'center';
-                    headerText.style.marginBottom = '20px';
-                    headerText.innerHTML = `<div style="color: #666;">Artworks by ${currentArtist}:</div>`;
+                    headerText.style.marginBottom = window.innerWidth <= 768 ? '10px' : '20px';
+                    headerText.style.fontSize = window.innerWidth <= 768 ? '1.1rem' : '1rem'; // Larger on mobile
+                    headerText.style.fontWeight = window.innerWidth <= 768 ? 'bold' : 'normal'; // Bold on mobile
+                    headerText.style.padding = window.innerWidth <= 480 ? '10px 0 5px 0' : '0'; // Add padding on small mobile
+                    headerText.style.backgroundColor = window.innerWidth <= 480 ? 'white' : 'transparent'; // White background on small mobile
+                    headerText.innerHTML = `<div style="color: #666;">Artworks by ${currentArtist}</div>`;
                     
                     // Append elements
                     iframeContainer.appendChild(iframe);
                     imageContainer.appendChild(headerText);
                     imageContainer.appendChild(iframeContainer);
                     
-                    // Add a note about opening in new tab if needed
-                    const noteDiv = document.createElement('div');
-                    noteDiv.style.textAlign = 'center';
-                    noteDiv.style.marginTop = '20px';
-                    noteDiv.innerHTML = `
-                        <div style="color: #666; font-size: 0.9rem;">
-                            If the embedded results don't display properly, you can 
-                            <a href="${googleImagesUrl}" target="_blank" style="color: var(--primary-color);">
-                                open Google Images in a new tab
-                            </a>
-                        </div>
-                    `;
-                    imageContainer.appendChild(noteDiv);
+                    // Add a note about opening in new tab if needed - hide on mobile to save space
+                    if (window.innerWidth > 768) {
+                        const noteDiv = document.createElement('div');
+                        noteDiv.style.textAlign = 'center';
+                        noteDiv.style.marginTop = '20px';
+                        noteDiv.innerHTML = `
+                            <div style="color: #666; font-size: 0.9rem;">
+                                If the embedded results don't display properly, you can 
+                                <a href="${googleImagesUrl}" target="_blank" style="color: var(--primary-color);">
+                                    open Google Images in a new tab
+                                </a>
+                            </div>
+                        `;
+                        imageContainer.appendChild(noteDiv);
+                    }
                     
                 } catch (error) {
                     console.error('Error embedding Google Images:', error);
@@ -615,7 +658,7 @@
                 updateHistoryUI();
                 
                 // Disable back button if we've reached the end of history
-                backBtn.disabled = history.length <= 1;
+                updateBackButtonStates();
                 
                 // Enable search button
                 searchBtn.disabled = false;
@@ -645,7 +688,7 @@
             updateHistoryUI();
             
             // Enable/disable back button
-            backBtn.disabled = history.length <= 1;
+            updateBackButtonStates();
         }
         
         // Update history UI
@@ -687,6 +730,11 @@
         searchBtn.addEventListener('click', searchGoogleImages);
         backBtn.addEventListener('click', goBackToPreviousArtist);
         
+        // Mobile button event listeners
+        document.getElementById('mobileGenerateBtn').addEventListener('click', generateRandomArtist);
+        document.getElementById('mobileSearchBtn').addEventListener('click', searchGoogleImages);
+        document.getElementById('mobileBackBtn').addEventListener('click', goBackToPreviousArtist);
+        
         // Add keyboard shortcuts
         document.addEventListener('keydown', function(event) {
             // Prevent keyboard shortcuts when user is typing in an input field
@@ -706,6 +754,13 @@
                 goBackToPreviousArtist();
             }
         });
+        
+        // Update back button states (both desktop and mobile)
+        function updateBackButtonStates() {
+            const isDisabled = history.length <= 1;
+            backBtn.disabled = isDisabled;
+            document.getElementById('mobileBackBtn').disabled = isDisabled;
+        }
         
         // Initialize
         fetchData();

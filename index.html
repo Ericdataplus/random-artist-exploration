@@ -274,6 +274,24 @@
                 font-size: 0.95rem;
             }
             
+            /* Reorder buttons on mobile */
+            .button-container {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #generateBtn {
+                order: 1;
+            }
+            
+            #backBtn {
+                order: 2;
+            }
+            
+            #searchBtn {
+                order: 3;
+            }
+            
             main {
                 padding: 0.5rem;
             }

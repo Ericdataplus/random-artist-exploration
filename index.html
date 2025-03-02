@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Discovery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .artist-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            width: 98%;
+            max-width: 98%;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .artist-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .artist-name {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            min-height: 3.5rem;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #1a2530;
+        }
+        
+        .image-container {
+            margin-top: 2rem;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background-color: #f5f5f5;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .image-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .image-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .image-item {
+            height: 250px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .image-item:hover {
+            transform: scale(1.03);
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-item:hover .image-caption {
+            opacity: 1;
+        }
+        
+        .image-placeholder {
+            color: #999;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .history-container {
+            margin-top: 3rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .history-title {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .history-item {
+            background-color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .history-item:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .error-message {
+            color: var(--accent-color);
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .artist-name {
+                font-size: 1.8rem;
+                min-height: 2.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .button-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            button {
+                width: 100%;
+                padding: 0.7rem 1rem;
+                font-size: 0.95rem;
+            }
+            
+            main {
+                padding: 0.5rem;
+            }
+            
+            .artist-container {
+                padding: 1rem;
+                margin: 0.5rem 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .history-container {
+                margin-top: 1.5rem;
+            }
+            
+            .history-title {
+                font-size: 1.3rem;
+            }
+            
+            .history-item {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            footer {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .artist-name {
+                font-size: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Artist Discovery</h1>
+        <div class="subtitle">Explore the world of art, one artist at a time</div>
+    </header>
+    
+    <main>
+        <div class="artist-container">
+            <div class="artist-name" id="artistName">Click to discover an artist</div>
+            
+            <div class="button-container">
+                <button id="generateBtn">Discover Random Artist</button>
+                <button id="searchBtn" class="secondary">Search on Google Images</button>
+            </div>
+            
+            <div class="image-container" id="imageContainer">
+                <div class="image-placeholder">Artist images will appear here</div>
+            </div>
+        </div>
+        
+        <div class="history-container">
+            <div class="history-title">Recently Discovered Artists</div>
+            <div class="history-list" id="historyList">
+                <!-- History items will be added here -->
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Created with ❤️ for art exploration | Data from MoMA Artists Collection</p>
+    </footer>
+    
+    <script>
+        // Store artists data
+        let artists = [];
+        let history = [];
+        const MAX_HISTORY = 15;
+        
+        // DOM elements
+        const artistNameElement = document.getElementById('artistName');
+        const generateBtn = document.getElementById('generateBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const imageContainer = document.getElementById('imageContainer');
+        const historyList = document.getElementById('historyList');
+        
+        // Store current artist for rerolling
+        let currentArtist = '';
+        
+        // Fetch artists data from CSV
+        async function fetchData() {
+            try {
+                // Fetch artists data from Unique_Artists.csv
+                const artistsResponse = await fetch('Unique_Artists.csv');
+                const artistsData = await artistsResponse.text();
+                
+                // Parse CSV
+                const artistRows = artistsData.split('\n');
+                // Skip header row and filter out empty rows
+                artists = artistRows.slice(1).filter(row => row.trim() !== '').map(row => row.trim());
+                
+                console.log(`Loaded ${artists.length} artists from Unique_Artists.csv`);
+                
+                // Enable button once data is loaded
+                generateBtn.disabled = false;
+                
+                // Generate first artist
+                generateRandomArtist();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                artistNameElement.textContent = 'Error loading data';
+                artistNameElement.classList.add('error-message');
+            }
+        }
+        
+        // Generate random artist
+        function generateRandomArtist() {
+            if (artists.length === 0) {
+                artistNameElement.textContent = 'No artists data available';
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * artists.length);
+            const artist = artists[randomIndex];
+            
+            // Update UI
+            artistNameElement.textContent = artist;
+            currentArtist = artist;
+            
+            // Show loading indicator
+            imageContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <div class="loading"></div>
+                    <div style="margin-top: 15px; color: #666;">
+                        Loading artworks by ${artist}...
+                    </div>
+                </div>
+            `;
+            
+            // Add to history
+            addToHistory(artist);
+            
+            // Enable search button
+            searchBtn.disabled = false;
+            
+            // Automatically load images
+            loadSampleImages();
+        }
+        
+        // Search on Google Images
+        function searchGoogleImages() {
+            const artist = artistNameElement.textContent;
+            if (artist && artist !== 'Click to discover an artist' && artist !== 'No artists data available') {
+                const searchQuery = encodeURIComponent(`${artist} artist artwork`);
+                window.open(`https://www.google.com/search?q=${searchQuery}&tbm=isch`, '_blank');
+            }
+        }
+        
+        // Load sample images using Google Custom Search API
+        async function loadSampleImages() {
+            const artist = currentArtist;
+            
+            if (artist && artist !== 'Click to discover an artist' && artist !== 'No artists data available') {
+                // Show loading indicator
+                imageContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <div class="loading"></div>
+                        <div style="margin-top: 15px; color: #666;">
+                            Loading artworks by ${artist}...
+                        </div>
+                    </div>
+                `;
+                
+                try {
+                    // Create an iframe to embed Google Image search results
+                    const searchQuery = encodeURIComponent(`${artist} artist artwork`);
+                    const googleImagesUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&igu=1`;
+                    
+                    // Clear container
+                    imageContainer.innerHTML = '';
+                    
+                    // Create iframe container with responsive styling
+                    const iframeContainer = document.createElement('div');
+                    iframeContainer.style.width = '100%';
+                    iframeContainer.style.height = '80vh';
+                    iframeContainer.style.minHeight = window.innerWidth <= 768 ? '500px' : '900px'; // Adjust height for mobile
+                    iframeContainer.style.overflow = 'hidden';
+                    iframeContainer.style.borderRadius = '8px';
+                    iframeContainer.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                    
+                    // Create iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.src = googleImagesUrl;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    iframe.title = `${artist} artwork images`;
+                    
+                    // Add header text
+                    const headerText = document.createElement('div');
+                    headerText.style.textAlign = 'center';
+                    headerText.style.marginBottom = '20px';
+                    headerText.innerHTML = `<div style="color: #666;">Artworks by ${currentArtist}:</div>`;
+                    
+                    // Append elements
+                    iframeContainer.appendChild(iframe);
+                    imageContainer.appendChild(headerText);
+                    imageContainer.appendChild(iframeContainer);
+                    
+                    // Add a note about opening in new tab if needed
+                    const noteDiv = document.createElement('div');
+                    noteDiv.style.textAlign = 'center';
+                    noteDiv.style.marginTop = '20px';
+                    noteDiv.innerHTML = `
+                        <div style="color: #666; font-size: 0.9rem;">
+                            If the embedded results don't display properly, you can 
+                            <a href="${googleImagesUrl}" target="_blank" style="color: var(--primary-color);">
+                                open Google Images in a new tab
+                            </a>
+                        </div>
+                    `;
+                    imageContainer.appendChild(noteDiv);
+                    
+                } catch (error) {
+                    console.error('Error embedding Google Images:', error);
+                    
+                    // If embedding fails, provide a direct link
+                    const googleImagesUrl = `https://www.google.com/search?q=${encodeURIComponent(`${artist} artist artwork`)}&tbm=isch`;
+                    
+                    imageContainer.innerHTML = `
+                        <div class="image-placeholder">
+                            <div style="margin-bottom: 20px; color: var(--secondary-color);">
+                                Unable to embed Google Images for "${artist}".
+                            </div>
+                            <button id="googleImagesRedirectBtn" class="secondary" style="margin-top: 10px;">
+                                Search for "${artist}" on Google Images
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add event listener to the new button
+                    document.getElementById('googleImagesRedirectBtn').addEventListener('click', () => {
+                        window.open(googleImagesUrl, '_blank');
+                    });
+                }
+            }
+        }
+        
+        // Add artist to history
+        function addToHistory(artist) {
+            // Don't add duplicates
+            if (!history.includes(artist)) {
+                history.unshift(artist);
+                
+                // Limit history size
+                if (history.length > MAX_HISTORY) {
+                    history.pop();
+                }
+                
+                // Update history UI
+                updateHistoryUI();
+            }
+        }
+        
+        // Update history UI
+        function updateHistoryUI() {
+            historyList.innerHTML = '';
+            
+            history.forEach(artist => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.textContent = artist;
+                historyItem.addEventListener('click', () => {
+                    // Update current artist
+                    artistNameElement.textContent = artist;
+                    currentArtist = artist;
+                    
+                    // Show loading indicator
+                    imageContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <div class="loading"></div>
+                            <div style="margin-top: 15px; color: #666;">
+                                Loading artworks by ${artist}...
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Enable search button
+                    searchBtn.disabled = false;
+                    
+                    // Automatically load images
+                    loadSampleImages();
+                });
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Event listeners
+        generateBtn.addEventListener('click', generateRandomArtist);
+        searchBtn.addEventListener('click', searchGoogleImages);
+        
+        // Initialize
+        fetchData();
+    </script>
+</body>
+</html>

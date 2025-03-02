@@ -28,12 +28,7 @@
         }
         
         header {
-            background-color: var(--primary-color);
-            color: white;
-            text-align: center;
-            padding: 1.5rem 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
+            display: none; /* Hide header on all devices */
         }
         
         h1 {
@@ -56,6 +51,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding-top: 1rem; /* Reduced from default */
         }
         
         .artist-container {
@@ -68,6 +64,7 @@
             max-width: 98%;
             text-align: center;
             transition: transform 0.3s ease;
+            margin-top: 0; /* Remove top margin since header is gone */
         }
         
         .artist-container:hover {
@@ -255,7 +252,8 @@
         .shortcut-tip {
             font-size: 0.8rem;
             color: #666;
-            margin-top: 1rem;
+            margin-top: 0; /* Adjusted since header is gone */
+            margin-bottom: 1rem; /* Add bottom margin instead */
             text-align: center;
             padding: 0.5rem;
             background-color: rgba(52, 152, 219, 0.1);

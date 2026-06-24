@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Artist Discovery">
     <title>Random Artist Discovery — stumble onto art you've never seen</title>
     <meta name="description" content="Discover a random artist from the Museum of Modern Art (MoMA) collection, see their artwork, and read a quick bio. Filter by nationality, era, or gender. A serendipity engine for art lovers.">
     <link rel="canonical" href="https://ericdataplus.github.io/random-artist-exploration/">
@@ -138,8 +142,9 @@
         }
         .filter-bar select {
             font-family: inherit;
-            font-size: 0.9rem;
-            padding: 0.4rem 0.6rem;
+            font-size: 16px; /* >=16px prevents iOS auto-zoom on focus */
+            padding: 0.5rem 0.6rem;
+            min-height: 42px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: var(--card);
@@ -251,6 +256,33 @@
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
             .artist-container:hover, .image-item:hover, button:hover { transform: none; }
         }
+        /* ---- Mobile optimizations ---- */
+        .filter-toggle { display: none; }
+        @media (max-width: 768px) {
+            .filter-toggle {
+                display: inline-flex; align-items: center; gap: 0.4rem;
+                margin: 0.25rem auto 0.6rem; padding: 0.65rem 1.2rem;
+                font-size: 0.95rem; border-radius: 22px; font-weight: 600; cursor: pointer;
+                background: var(--card); color: var(--text); border: 1px solid var(--border);
+            }
+            .filter-bar {
+                display: none; flex-direction: column; align-items: stretch;
+                width: 100%; max-width: 440px; gap: 0.7rem;
+                background: var(--card); border: 1px solid var(--border);
+                border-radius: 12px; padding: 0.9rem; margin: 0 auto 0.75rem;
+            }
+            .filter-bar.open { display: flex; }
+            .filter-bar label { justify-content: space-between; font-size: 0.95rem; }
+            .filter-bar select { flex: 1; margin-left: 0.6rem; min-width: 0; }
+            .filter-bar .more-like-btn { width: 100%; padding: 0.75rem; font-size: 1rem; }
+            .pool-count { text-align: center; }
+            /* Bottom action bar: clear the iOS home indicator + bigger taps */
+            .mobile-button-bar { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+            .mobile-button-bar button { min-height: 46px; }
+            body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); }
+            .aotd-btn { padding: 0.6rem 1.2rem; font-size: 0.95rem; }
+            .theme-toggle { width: 46px; height: 46px; font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
@@ -267,7 +299,8 @@
             <button id="aotdBtn" class="aotd-btn" title="See today's featured artist (same for everyone)">🎨 Artist of the Day</button>
         </div>
 
-        <div class="filter-bar">
+        <button class="filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filterBar">🔎 Filters ▾</button>
+        <div class="filter-bar" id="filterBar">
             <label>Nationality
                 <select id="fNat"><option value="">All</option></select>
             </label>
@@ -640,6 +673,13 @@
         document.getElementById('mobileSearchBtn').addEventListener('click', searchGoogleImages);
         document.getElementById('mobileBackBtn').addEventListener('click', goBackToPreviousArtist);
         document.getElementById('mobileShareBtn').addEventListener('click', shareCurrentArtist);
+        document.getElementById('filterToggle').addEventListener('click', () => {
+            const fb = document.getElementById('filterBar');
+            const open = fb.classList.toggle('open');
+            const t = document.getElementById('filterToggle');
+            t.setAttribute('aria-expanded', open ? 'true' : 'false');
+            t.textContent = open ? '🔎 Filters ▴' : '🔎 Filters ▾';
+        });
 
         document.addEventListener('keydown', function(event) {
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') return;

@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Artist Discovery — stumble onto art you've never seen</title>
-    <meta name="description" content="Discover a random artist from the Museum of Modern Art (MoMA) collection, see their artwork, and read a quick bio. A serendipity engine for art lovers.">
+    <meta name="description" content="Discover a random artist from the Museum of Modern Art (MoMA) collection, see their artwork, and read a quick bio. Filter by nationality, era, or gender. A serendipity engine for art lovers.">
     <link rel="canonical" href="https://ericdataplus.github.io/random-artist-exploration/">
     <meta name="theme-color" content="#2176bd">
-    <!-- Open Graph / social cards -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Random Artist Discovery">
     <meta property="og:description" content="Stumble onto art you've never seen — a random artist from the MoMA collection, their work, and a quick bio. Press Space for the next one.">
@@ -21,14 +20,33 @@
             --primary-color: #2176bd;
             --secondary-color: #2c3e50;
             --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
+            --bg: #ecf0f1;
+            --text: #2c3e50;
+            --card: #ffffff;
+            --card-2: #f8fafc;
+            --border: #e3e8ee;
+            --muted: #5a6775;
+            --name: #2c3e50;
         }
+
+        body.dark {
+            --primary-color: #4aa3e0;
+            --secondary-color: #2a2f3a;
+            --bg: #14161b;
+            --text: #e6e9ee;
+            --card: #1e2128;
+            --card-2: #23262e;
+            --border: #333a44;
+            --muted: #9fb0c0;
+            --name: #f0f3f7;
+        }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
             padding: 0;
             display: flex;
@@ -36,22 +54,11 @@
             min-height: 100vh;
             max-width: 100%;
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        header {
-            display: none; /* Hide header on all devices */
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 2.5rem;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-top: 0.5rem;
-        }
+        header { display: none; }
+        h1 { margin: 0; font-size: 2.5rem; }
 
         main {
             flex: 1;
@@ -62,433 +69,194 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 1rem; /* Reduced from default */
+            padding-top: 1rem;
         }
 
+        /* Theme toggle (fixed top-right) */
+        .theme-toggle {
+            position: fixed;
+            top: 12px; right: 12px;
+            z-index: 150;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 42px; height: 42px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: flex; align-items: center; justify-content: center;
+            padding: 0;
+        }
+        .theme-toggle:hover { transform: scale(1.08); }
+
         .artist-container {
-            background-color: white;
+            background-color: var(--card);
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
-            margin: 1rem 0;
+            margin: 0 0 1rem;
             width: 98%;
             max-width: 98%;
             text-align: center;
-            transition: transform 0.3s ease;
-            margin-top: 0; /* Remove top margin since header is gone */
+            transition: transform 0.3s ease, background-color 0.3s ease;
         }
-
-        .artist-container:hover {
-            transform: translateY(-5px);
-        }
+        .artist-container:hover { transform: translateY(-5px); }
 
         .artist-name {
             font-size: 2.5rem;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-            min-height: 3.5rem;
+            color: var(--name);
+            margin-bottom: 0.35rem;
+            min-height: 3rem;
         }
 
-        /* Artist of the Day banner */
-        .aotd-banner {
-            display: flex;
-            justify-content: center;
-            margin: 0.25rem 0 0.5rem;
+        .context-line {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            min-height: 1.2rem;
+            letter-spacing: 0.02em;
         }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            align-items: center;
+            margin: 0.25rem auto 0.75rem;
+            max-width: 900px;
+        }
+        .filter-bar label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .filter-bar select {
+            font-family: inherit;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+        }
+        .pool-count { font-size: 0.8rem; color: var(--muted); }
+        .more-like-btn {
+            background: linear-gradient(135deg, #2176bd, #6a3fb5);
+            color: #fff; border: none; border-radius: 20px;
+            padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        }
+        .more-like-btn:hover { filter: brightness(1.08); transform: scale(1.04); }
+
+        .aotd-banner { display: flex; justify-content: center; margin: 0.25rem 0 0.5rem; }
         .aotd-btn {
             background: linear-gradient(135deg, #2176bd, #6a3fb5);
-            color: #fff;
-            border: none;
-            padding: 0.5rem 1.1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
+            color: #fff; border: none; padding: 0.5rem 1.1rem; border-radius: 20px;
+            font-weight: 600; font-size: 0.9rem; cursor: pointer;
         }
         .aotd-btn:hover { filter: brightness(1.08); transform: scale(1.04); }
 
-        /* Wikipedia bio card */
         .bio-card {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-            text-align: left;
-            background: #f8fafc;
-            border: 1px solid #e3e8ee;
-            border-radius: 10px;
-            padding: 1rem 1.2rem;
-            margin: 0 auto 1.25rem;
-            max-width: 760px;
+            display: flex; gap: 1rem; align-items: flex-start; text-align: left;
+            background: var(--card-2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.2rem; margin: 0 auto 1.25rem; max-width: 760px;
         }
-        .bio-card .bio-thumb {
-            width: 84px; height: 84px;
-            object-fit: cover; border-radius: 8px; flex-shrink: 0;
-        }
-        .bio-card .bio-text {
-            margin: 0 0 0.4rem;
-            font-size: 0.95rem; line-height: 1.5; color: #34495e;
-        }
-        .bio-card .bio-link {
-            font-size: 0.85rem; color: var(--primary-color); font-weight: 600; text-decoration: none;
-        }
+        .bio-card .bio-thumb { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+        .bio-card .bio-text { margin: 0 0 0.4rem; font-size: 0.95rem; line-height: 1.5; color: var(--text); }
+        .bio-card .bio-link { font-size: 0.85rem; color: var(--primary-color); font-weight: 600; text-decoration: none; }
         .bio-card .bio-link:hover { text-decoration: underline; }
 
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
+        .button-container { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
 
         button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            font-weight: 600;
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 5px; cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease; font-weight: 600;
         }
-
-        button:hover {
-            background-color: #1a5e98;
-            transform: scale(1.05);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
+        button:hover { background-color: #1a5e98; transform: scale(1.05); }
+        button:active { transform: scale(0.98); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-        /* Visible keyboard focus for accessibility */
-        button:focus-visible, .history-item:focus-visible, a:focus-visible {
-            outline: 3px solid #6a3fb5;
-            outline-offset: 2px;
+        button:focus-visible, .history-item:focus-visible, a:focus-visible, select:focus-visible {
+            outline: 3px solid #6a3fb5; outline-offset: 2px;
         }
+        button.secondary { background-color: var(--secondary-color); }
+        body:not(.dark) button.secondary:hover { background-color: #1a2530; }
 
-        button.secondary {
-            background-color: var(--secondary-color);
-        }
+        .image-container { margin-top: 2rem; width: 100%; border-radius: 8px; overflow: hidden; position: relative; background-color: var(--card-2); }
+        .image-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 15px; margin-top: 15px; }
+        @media (min-width: 768px) { .image-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .image-grid { grid-template-columns: repeat(4, 1fr); } }
+        .image-item { height: 250px; border-radius: 8px; overflow: hidden; position: relative; background-color: var(--card-2); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
+        .image-item:hover { transform: scale(1.03); }
+        .image-item img { width: 100%; height: 100%; object-fit: cover; }
+        .image-caption { position: absolute; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 8px; font-size: 0.8rem; opacity: 0; transition: opacity 0.3s ease; }
+        .image-item:hover .image-caption { opacity: 1; }
+        .image-placeholder { color: var(--muted); font-size: 1.2rem; text-align: center; padding: 2rem; }
 
-        button.secondary:hover {
-            background-color: #1a2530;
-        }
+        .loading { display: inline-block; width: 50px; height: 50px; border: 3px solid rgba(127, 127, 127, 0.2); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .image-container {
-            margin-top: 2rem;
-            width: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            background-color: #f5f5f5;
-        }
+        .history-container { margin-top: 3rem; width: 100%; max-width: 800px; }
+        .history-title { text-align: center; color: var(--name); margin-bottom: 1rem; font-size: 1.5rem; }
+        .history-list { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+        .history-item { background-color: var(--card); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.3s ease; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); border: 1px solid var(--border); font-family: inherit; color: var(--text); }
+        .history-item:hover { background-color: var(--primary-color); color: white; }
 
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 15px;
-            margin-top: 15px;
-        }
+        footer { background-color: var(--secondary-color); color: #dfe6ee; text-align: center; padding: 1rem; margin-top: 2rem; }
 
-        @media (min-width: 768px) {
-            .image-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
+        .shortcut-tip { font-size: 0.8rem; color: var(--muted); margin: 0 0 1rem; text-align: center; padding: 0.5rem; background-color: rgba(33, 118, 189, 0.12); border-radius: 5px; display: block; }
 
-        @media (min-width: 1024px) {
-            .image-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        .image-item {
-            height: 250px;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            background-color: #f5f5f5;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .image-item:hover {
-            transform: scale(1.03);
-        }
-
-        .image-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .image-caption {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px;
-            font-size: 0.8rem;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .image-item:hover .image-caption {
-            opacity: 1;
-        }
-
-        .image-placeholder {
-            color: #999;
-            font-size: 1.2rem;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .history-container {
-            margin-top: 3rem;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .history-title {
-            text-align: center;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-
-        .history-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-
-        .history-item {
-            background-color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border: none;
-            font-family: inherit;
-            color: var(--dark-color);
-        }
-
-        .history-item:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        footer {
-            background-color: var(--secondary-color);
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            margin-top: 2rem;
-        }
-
-        .error-message {
-            color: var(--accent-color);
-            margin-top: 1rem;
-        }
-
-        .shortcut-tip {
-            font-size: 0.8rem;
-            color: #555;
-            margin-top: 0; /* Adjusted since header is gone */
-            margin-bottom: 1rem; /* Add bottom margin instead */
-            text-align: center;
-            padding: 0.5rem;
-            background-color: rgba(33, 118, 189, 0.1);
-            border-radius: 5px;
-            display: block;
-        }
-
-        /* Copy-link toast */
-        .toast {
-            position: fixed;
-            bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: #2c3e50; color: #fff; padding: 0.7rem 1.2rem;
-            border-radius: 8px; font-size: 0.9rem; font-weight: 600;
-            opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
-            z-index: 200;
-        }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: #2c3e50; color: #fff; padding: 0.7rem 1.2rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 200; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        .mobile-button-bar {
-            display: none; /* Hidden by default, shown only on mobile */
-        }
+        .mobile-button-bar { display: none; }
 
         @media (max-width: 768px) {
-            header {
-                padding: 0.8rem 0;
-            }
-
-            /* Keep the artist name visible on mobile (smaller) for clarity + screen readers */
-            .artist-name {
-                display: block;
-                font-size: 1.6rem;
-                min-height: 0;
-            }
-
+            .artist-name { display: block; font-size: 1.6rem; min-height: 0; }
             .bio-card { flex-direction: column; align-items: center; text-align: center; }
             .bio-card .bio-text { text-align: center; }
-
-            /* Hide the regular button container on mobile */
-            .button-container {
-                display: none;
-            }
-
-            /* Show the mobile button bar */
+            .button-container { display: none; }
             .mobile-button-bar {
-                display: flex;
-                position: fixed;
-                bottom: 20px;
-                left: 10px;
-                right: 10px;
-                background-color: rgba(255, 255, 255, 0.98);
-                box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-                padding: 0.8rem;
-                z-index: 100;
-                justify-content: space-around;
-                border-radius: 10px;
-                border: 1px solid rgba(0, 0, 0, 0.1);
+                display: flex; position: fixed; bottom: 20px; left: 10px; right: 10px;
+                background-color: var(--card); box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+                padding: 0.8rem; z-index: 100; justify-content: space-around; border-radius: 10px; border: 1px solid var(--border);
             }
-
-            .mobile-button-bar button {
-                flex: 1;
-                margin: 0 0.3rem;
-                padding: 0.8rem 0.4rem;
-                font-size: 0.9rem;
-                border-radius: 6px;
-                font-weight: bold;
-            }
-
-            /* Add padding to the bottom of the page to account for the fixed button bar */
-            body {
-                padding-bottom: 100px;
-            }
-
-            /* Adjust the footer to appear above the button bar */
-            footer {
-                margin-bottom: 100px;
-            }
-
-            main {
-                padding: 0.5rem;
-            }
-
-            .artist-container {
-                padding: 0.8rem;
-                margin: 0.3rem 0;
-                width: 100%;
-                max-width: 100%;
-            }
-
-            .history-container {
-                margin-top: 1.5rem;
-                margin-bottom: 2rem;
-            }
-
-            .history-title {
-                font-size: 1.3rem;
-            }
-
-            .history-item {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .subtitle {
-                font-size: 1rem;
-            }
-
-            footer {
-                padding: 0.8rem;
-                font-size: 0.9rem;
-            }
-
-            .shortcut-tip {
-                display: none; /* Hide shortcuts tip on mobile */
-            }
+            .mobile-button-bar button { flex: 1; margin: 0 0.3rem; padding: 0.8rem 0.4rem; font-size: 0.9rem; border-radius: 6px; font-weight: bold; }
+            body { padding-bottom: 100px; }
+            footer { margin-bottom: 100px; }
+            main { padding: 0.5rem; }
+            .artist-container { padding: 0.8rem; margin: 0.3rem 0; width: 100%; max-width: 100%; }
+            .history-container { margin-top: 1.5rem; margin-bottom: 2rem; }
+            .history-title { font-size: 1.3rem; }
+            .history-item { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+            footer { padding: 0.8rem; font-size: 0.9rem; }
+            .shortcut-tip { display: none; }
         }
 
         @media (max-width: 480px) {
-            main {
-                padding-top: 0; /* Remove top padding since header is gone */
-                padding-left: 0; /* Remove left padding */
-                padding-right: 0; /* Remove right padding */
-            }
-
-            .artist-container {
-                margin-top: 0; /* Remove top margin since header is gone */
-                margin-left: 0; /* Remove left margin */
-                margin-right: 0; /* Remove right margin */
-                border-radius: 0; /* Remove border radius for full-width look */
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem; /* Reduced padding at bottom */
-                box-shadow: none; /* Remove shadow for cleaner look */
-            }
-
-            .artist-name {
-                font-size: 1.4rem;
-                margin-bottom: 0.3rem;
-            }
-
-            .image-container {
-                margin-top: 0; /* Remove top margin */
-                border-radius: 0; /* Remove border radius */
-            }
-
-            footer {
-                font-size: 0.8rem;
-                padding: 0.6rem;
-            }
+            main { padding-top: 0; padding-left: 0; padding-right: 0; }
+            .artist-container { margin: 0; border-radius: 0; padding-top: 0.5rem; padding-bottom: 0.5rem; box-shadow: none; }
+            .artist-name { font-size: 1.4rem; margin-bottom: 0.2rem; }
+            .image-container { margin-top: 0; border-radius: 0; }
+            footer { font-size: 0.8rem; padding: 0.6rem; }
         }
 
-        /* Respect reduced-motion preference */
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
             .artist-container:hover, .image-item:hover, button:hover { transform: none; }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Artist Discovery</h1>
-        <div class="subtitle">Explore the world of art, one artist at a time</div>
-    </header>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+
+    <header><h1>Artist Discovery</h1></header>
 
     <main>
         <div class="shortcut-tip">
@@ -499,8 +267,27 @@
             <button id="aotdBtn" class="aotd-btn" title="See today's featured artist (same for everyone)">🎨 Artist of the Day</button>
         </div>
 
+        <div class="filter-bar">
+            <label>Nationality
+                <select id="fNat"><option value="">All</option></select>
+            </label>
+            <label>Era
+                <select id="fEra"><option value="">All</option></select>
+            </label>
+            <label>Gender
+                <select id="fGender">
+                    <option value="">Any</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </label>
+            <button id="moreLikeBtn" class="more-like-btn" title="Discover another artist like this one">✨ More like this</button>
+            <span class="pool-count" id="poolCount"></span>
+        </div>
+
         <div class="artist-container">
             <h1 class="artist-name" id="artistName" aria-live="polite">Click to discover an artist</h1>
+            <div class="context-line" id="contextLine"></div>
 
             <div class="bio-card" id="bioCard" style="display:none"></div>
 
@@ -518,12 +305,9 @@
 
         <div class="history-container">
             <div class="history-title">Recently Discovered Artists</div>
-            <div class="history-list" id="historyList">
-                <!-- History items will be added here -->
-            </div>
+            <div class="history-list" id="historyList"></div>
         </div>
 
-        <!-- Mobile button bar (fixed at bottom of screen) -->
         <div class="mobile-button-bar">
             <button id="mobileGenerateBtn" class="primary">New</button>
             <button id="mobileBackBtn" class="secondary" disabled>Back</button>
@@ -532,85 +316,144 @@
         </div>
     </main>
 
-    <footer>
-        <p>Created with ❤️ for art exploration | Data from MoMA Artists Collection</p>
-    </footer>
+    <footer><p>Created with ❤️ for art exploration | Data from the MoMA Artists Collection</p></footer>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
-        // Store artists data
-        let artists = [];
+        // ---- Data ----
+        let allArtists = [];          // [{name, nat, gender, born, died}]
+        let pool = [];                // current filtered subset
+        const byName = new Map();     // name -> meta
         let history = [];
         const MAX_HISTORY = 15;
         const HISTORY_KEY = 'rad_history_v1';
+        const THEME_KEY = 'rad_theme';
 
-        // DOM elements
+        const ERAS = [
+            ['Before 1700', y => y < 1700],
+            ['1700s',       y => y >= 1700 && y < 1800],
+            ['1800–1849',   y => y >= 1800 && y < 1850],
+            ['1850–1899',   y => y >= 1850 && y < 1900],
+            ['1900–1924',   y => y >= 1900 && y < 1925],
+            ['1925–1949',   y => y >= 1925 && y < 1950],
+            ['1950 & later',y => y >= 1950],
+        ];
+        function eraOf(born) {
+            if (!born) return null;
+            for (const [label, test] of ERAS) if (test(born)) return label;
+            return null;
+        }
+
+        // ---- DOM ----
         const artistNameElement = document.getElementById('artistName');
+        const contextLine = document.getElementById('contextLine');
         const generateBtn = document.getElementById('generateBtn');
         const searchBtn = document.getElementById('searchBtn');
         const backBtn = document.getElementById('backBtn');
         const shareBtn = document.getElementById('shareBtn');
+        const moreLikeBtn = document.getElementById('moreLikeBtn');
         const imageContainer = document.getElementById('imageContainer');
         const historyList = document.getElementById('historyList');
         const bioCard = document.getElementById('bioCard');
         const toastEl = document.getElementById('toast');
+        const fNat = document.getElementById('fNat');
+        const fEra = document.getElementById('fEra');
+        const fGender = document.getElementById('fGender');
+        const poolCount = document.getElementById('poolCount');
 
-        // Store current artist for rerolling
         let currentArtist = '';
-        let currentHistoryIndex = -1; // Track position in history for back button
 
-        // Fetch artists data from CSV
+        // ---- Theme ----
+        function applyTheme(mode) {
+            const dark = mode === 'dark';
+            document.body.classList.toggle('dark', dark);
+            document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
+        }
+        (function initTheme() {
+            const saved = localStorage.getItem(THEME_KEY);
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+        })();
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+            localStorage.setItem(THEME_KEY, next);
+            applyTheme(next);
+        });
+
+        // ---- Init / data load ----
         async function fetchData() {
             try {
-                // Restore history from a previous visit
                 try {
                     const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-                    if (Array.isArray(saved)) { history = saved.slice(0, MAX_HISTORY); }
-                } catch (e) { /* ignore corrupt storage */ }
+                    if (Array.isArray(saved)) history = saved.slice(0, MAX_HISTORY);
+                } catch (e) {}
                 updateHistoryUI();
                 updateBackButtonStates();
 
-                // Fetch artists data from Unique_Artists.csv
-                const artistsResponse = await fetch('Unique_Artists.csv');
-                const artistsData = await artistsResponse.text();
+                const res = await fetch('artists.json');
+                const raw = await res.json();
+                allArtists = raw.map(r => ({ name: r[0], nat: r[1] || '', gender: r[2] || '', born: r[3] || null, died: r[4] || null }))
+                                .filter(a => a.name);
+                allArtists.forEach(a => { if (!byName.has(a.name)) byName.set(a.name, a); });
+                console.log(`Loaded ${allArtists.length} artists from artists.json`);
 
-                // Parse CSV
-                const artistRows = artistsData.split('\n');
-                // Skip header row and filter out empty rows
-                artists = artistRows.slice(1).filter(row => row.trim() !== '').map(row => row.trim());
-
-                console.log(`Loaded ${artists.length} artists from Unique_Artists.csv`);
-
-                // Enable button once data is loaded
+                buildFilterOptions();
+                applyFilters();
                 generateBtn.disabled = false;
 
-                // Deep link: ?artist=Name shows that artist directly (shareable links)
                 const requested = new URLSearchParams(location.search).get('artist');
-                if (requested) {
-                    showArtist(requested.trim());
-                } else {
-                    generateRandomArtist();
-                }
+                if (requested) showArtist(requested.trim());
+                else generateRandomArtist();
             } catch (error) {
                 console.error('Error loading data:', error);
                 artistNameElement.textContent = 'Error loading data';
-                artistNameElement.classList.add('error-message');
             }
         }
 
-        // Central renderer: set name, update URL, fetch bio, load images
+        function buildFilterOptions() {
+            // Nationalities by frequency (top 35)
+            const counts = {};
+            allArtists.forEach(a => { if (a.nat && a.nat !== 'Nationality unknown') counts[a.nat] = (counts[a.nat] || 0) + 1; });
+            Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 35).forEach(nat => {
+                const o = document.createElement('option'); o.value = nat; o.textContent = `${nat} (${counts[nat]})`; fNat.appendChild(o);
+            });
+            // Eras (only those present)
+            const present = new Set(allArtists.map(a => eraOf(a.born)).filter(Boolean));
+            ERAS.forEach(([label]) => { if (present.has(label)) { const o = document.createElement('option'); o.value = label; o.textContent = label; fEra.appendChild(o); } });
+        }
+
+        function applyFilters() {
+            const nat = fNat.value, era = fEra.value, gender = fGender.value;
+            pool = allArtists.filter(a =>
+                (!nat || a.nat === nat) &&
+                (!era || eraOf(a.born) === era) &&
+                (!gender || a.gender === gender)
+            );
+            poolCount.textContent = pool.length ? `${pool.length.toLocaleString()} artists` : 'No matches — try other filters';
+        }
+        [fNat, fEra, fGender].forEach(sel => sel.addEventListener('change', applyFilters));
+
+        // ---- Render ----
+        function metaContext(meta) {
+            if (!meta) return '';
+            const parts = [];
+            if (meta.nat && meta.nat !== 'Nationality unknown') parts.push(meta.nat);
+            let years = '';
+            if (meta.born && meta.died) years = `${meta.born}–${meta.died}`;
+            else if (meta.born) years = `b. ${meta.born}`;
+            else if (meta.died) years = `d. ${meta.died}`;
+            if (years) parts.push(years);
+            return parts.join('  ·  ');
+        }
+
         function showArtist(artist, { addHistory = true } = {}) {
             if (!artist) return;
             artistNameElement.textContent = artist;
-            artistNameElement.classList.remove('error-message');
             currentArtist = artist;
+            contextLine.textContent = metaContext(byName.get(artist));
 
-            imageContainer.innerHTML = `
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="loading"></div>
-                    <div style="margin-top: 15px; color: #666;">Loading artworks by ${artist}...</div>
-                </div>`;
+            imageContainer.innerHTML = `<div style="text-align:center;padding:2rem;"><div class="loading"></div><div style="margin-top:15px;color:#888;">Loading artworks by ${artist}...</div></div>`;
 
             if (addHistory) addToHistory(artist);
             searchBtn.disabled = false;
@@ -620,48 +463,41 @@
             loadSampleImages();
         }
 
-        // Keep the URL in sync so the current artist is shareable/bookmarkable
         function updateShareUrl(artist) {
-            try {
-                const url = location.pathname + '?artist=' + encodeURIComponent(artist);
-                window.history.replaceState(null, '', url);
-            } catch (e) { /* no-op */ }
+            try { window.history.replaceState(null, '', location.pathname + '?artist=' + encodeURIComponent(artist)); } catch (e) {}
         }
 
-        // Normalize a MoMA display name for a Wikipedia lookup
         function normalizeName(name) {
-            let n = name.replace(/\s*\([^)]*\)\s*/g, ' ').trim(); // strip parentheticals
-            const comma = n.match(/^([^,]+),\s*(.+)$/);            // "Last, First" -> "First Last"
+            let n = name.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+            const comma = n.match(/^([^,]+),\s*(.+)$/);
             if (comma) n = (comma[2] + ' ' + comma[1]).trim();
             return n.replace(/\s+/g, ' ');
         }
 
-        // Pull a short bio + portrait from Wikipedia (CORS-enabled REST API)
         async function loadArtistBio(artist) {
             bioCard.style.display = 'none';
             bioCard.innerHTML = '';
             const title = normalizeName(artist);
-            if (!title || title.split(' ').length < 2) return; // skip single-token / junk names
+            if (!title || title.split(' ').length < 2) return;
             try {
                 const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title));
                 if (!res.ok) return;
                 const d = await res.json();
-                if (artist !== currentArtist) return;          // a newer artist was picked; drop stale result
+                if (artist !== currentArtist) return;
                 if (d.type === 'disambiguation' || !d.extract) return;
                 const thumb = d.thumbnail ? `<img class="bio-thumb" src="${d.thumbnail.source}" alt="Portrait of ${title}">` : '';
                 const link = (d.content_urls && d.content_urls.desktop) ? d.content_urls.desktop.page : ('https://en.wikipedia.org/wiki/' + encodeURIComponent(title));
                 bioCard.innerHTML = `${thumb}<div><p class="bio-text">${d.extract}</p><a class="bio-link" href="${link}" target="_blank" rel="noopener">Read more on Wikipedia →</a></div>`;
                 bioCard.style.display = 'flex';
-            } catch (e) { /* no bio available */ }
+            } catch (e) {}
         }
 
-        // Deterministic "Artist of the Day" — same pick for everyone on a given date
         function dailyArtist() {
-            if (!artists.length) return null;
-            const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+            if (!allArtists.length) return null;
+            const today = new Date().toISOString().slice(0, 10);
             let h = 0;
-            for (let i = 0; i < today.length; i++) { h = (h * 31 + today.charCodeAt(i)) >>> 0; }
-            return artists[h % artists.length];
+            for (let i = 0; i < today.length; i++) h = (h * 31 + today.charCodeAt(i)) >>> 0;
+            return allArtists[h % allArtists.length].name;
         }
 
         function showToast(msg) {
@@ -675,136 +511,92 @@
             if (!currentArtist || currentArtist === 'Click to discover an artist') return;
             const url = location.origin + location.pathname + '?artist=' + encodeURIComponent(currentArtist);
             try {
-                if (navigator.share) {
-                    await navigator.share({ title: 'Random Artist Discovery', text: `Check out ${currentArtist}`, url });
-                } else {
-                    await navigator.clipboard.writeText(url);
-                    showToast('Link copied to clipboard');
-                }
-            } catch (e) { /* user cancelled or clipboard blocked */ }
+                if (navigator.share) await navigator.share({ title: 'Random Artist Discovery', text: `Check out ${currentArtist}`, url });
+                else { await navigator.clipboard.writeText(url); showToast('Link copied to clipboard'); }
+            } catch (e) {}
         }
 
-        // Generate random artist
+        function pickFrom(list) {
+            if (!list || !list.length) return null;
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
         function generateRandomArtist() {
-            if (artists.length === 0) {
-                artistNameElement.textContent = 'No artists data available';
-                return;
-            }
-            const randomIndex = Math.floor(Math.random() * artists.length);
-            showArtist(artists[randomIndex]);
+            const src = pool.length ? pool : allArtists;
+            const a = pickFrom(src);
+            if (!a) { artistNameElement.textContent = 'No artists available'; return; }
+            showArtist(a.name);
         }
 
-        // Search on Google Images
-        function searchGoogleImages() {
-            const artist = artistNameElement.textContent;
-            if (artist && artist !== 'Click to discover an artist' && artist !== 'No artists data available') {
-                const searchQuery = encodeURIComponent(`${artist} artist artwork`);
-                window.open(`https://www.google.com/search?q=${searchQuery}&tbm=isch`, '_blank');
+        function moreLikeThis() {
+            const meta = byName.get(currentArtist);
+            if (!meta) { generateRandomArtist(); return; }
+            let candidates = [];
+            if (meta.nat && meta.nat !== 'Nationality unknown') candidates = allArtists.filter(a => a.nat === meta.nat && a.name !== currentArtist);
+            if (candidates.length < 2) {
+                const era = eraOf(meta.born);
+                if (era) candidates = allArtists.filter(a => eraOf(a.born) === era && a.name !== currentArtist);
             }
+            const a = pickFrom(candidates.length ? candidates : allArtists);
+            if (a) showArtist(a.name);
         }
 
-        // Load sample images by embedding Google Image search results (igu=1 makes it iframe-able)
+        // ---- Google Images gallery (unchanged: igu=1 makes it iframe-able) ----
         async function loadSampleImages() {
             const artist = currentArtist;
-
-            if (artist && artist !== 'Click to discover an artist' && artist !== 'No artists data available') {
-                // Show loading indicator
-                imageContainer.innerHTML = `
-                    <div style="text-align: center; padding: 2rem;">
-                        <div class="loading"></div>
-                        <div style="margin-top: 15px; color: #666;">
-                            Loading artworks by ${artist}...
-                        </div>
-                    </div>
-                `;
-
+            if (artist && artist !== 'Click to discover an artist' && artist !== 'No artists available') {
+                imageContainer.innerHTML = `<div style="text-align:center;padding:2rem;"><div class="loading"></div><div style="margin-top:15px;color:#888;">Loading artworks by ${artist}...</div></div>`;
                 try {
-                    // Create an iframe to embed Google Image search results
                     const searchQuery = encodeURIComponent(`${artist} artist artwork`);
-                    // Add 'tbm=isch&tbs=isz:m' to show medium-sized images (more visible at once)
                     const googleImagesUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&tbs=isz:m&igu=1`;
-
-                    // Clear container
                     imageContainer.innerHTML = '';
-
-                    // Create iframe container with responsive styling
                     const iframeContainer = document.createElement('div');
                     iframeContainer.style.width = '100%';
                     iframeContainer.style.height = '80vh';
-                    iframeContainer.style.minHeight = window.innerWidth <= 768 ? '550px' : '900px'; // Increased from 500px for mobile
+                    iframeContainer.style.minHeight = window.innerWidth <= 768 ? '550px' : '900px';
                     iframeContainer.style.overflow = 'hidden';
-                    iframeContainer.style.borderRadius = window.innerWidth <= 480 ? '0' : '8px'; // No border radius on small mobile
-                    iframeContainer.style.boxShadow = window.innerWidth <= 480 ? 'none' : '0 4px 6px rgba(0, 0, 0, 0.1)'; // No shadow on small mobile
-
-                    // Create iframe
+                    iframeContainer.style.borderRadius = window.innerWidth <= 480 ? '0' : '8px';
+                    iframeContainer.style.boxShadow = window.innerWidth <= 480 ? 'none' : '0 4px 6px rgba(0, 0, 0, 0.1)';
                     const iframe = document.createElement('iframe');
                     iframe.src = googleImagesUrl;
                     iframe.style.width = '100%';
                     iframe.style.height = '100%';
                     iframe.style.border = 'none';
                     iframe.title = `${artist} artwork images`;
-
-                    // Add header text - make it more prominent on mobile since it's the only place showing the artist name
                     const headerText = document.createElement('div');
                     headerText.style.textAlign = 'center';
                     headerText.style.marginBottom = window.innerWidth <= 768 ? '10px' : '20px';
-                    headerText.style.fontSize = window.innerWidth <= 768 ? '1.1rem' : '1rem'; // Larger on mobile
-                    headerText.style.fontWeight = window.innerWidth <= 768 ? 'bold' : 'normal'; // Bold on mobile
-                    headerText.style.padding = window.innerWidth <= 480 ? '10px 0 5px 0' : '0'; // Add padding on small mobile
-                    headerText.style.backgroundColor = window.innerWidth <= 480 ? 'white' : 'transparent'; // White background on small mobile
-                    headerText.innerHTML = `<div style="color: #666;">Artworks by ${currentArtist}</div>`;
-
-                    // Append elements
+                    headerText.style.fontSize = window.innerWidth <= 768 ? '1.1rem' : '1rem';
+                    headerText.style.fontWeight = window.innerWidth <= 768 ? 'bold' : 'normal';
+                    headerText.style.padding = window.innerWidth <= 480 ? '10px 0 5px 0' : '0';
+                    headerText.innerHTML = `<div style="color:var(--muted);">Artworks by ${currentArtist}</div>`;
                     iframeContainer.appendChild(iframe);
                     imageContainer.appendChild(headerText);
                     imageContainer.appendChild(iframeContainer);
-
-                    // Add a note about opening in new tab if needed - hide on mobile to save space
                     if (window.innerWidth > 768) {
                         const noteDiv = document.createElement('div');
                         noteDiv.style.textAlign = 'center';
                         noteDiv.style.marginTop = '20px';
-                        noteDiv.innerHTML = `
-                            <div style="color: #666; font-size: 0.9rem;">
-                                If the embedded results don't display properly, you can
-                                <a href="${googleImagesUrl}" target="_blank" style="color: var(--primary-color);">
-                                    open Google Images in a new tab
-                                </a>
-                            </div>
-                        `;
+                        noteDiv.innerHTML = `<div style="color:var(--muted);font-size:0.9rem;">If the embedded results don't display properly, you can <a href="${googleImagesUrl}" target="_blank" style="color:var(--primary-color);">open Google Images in a new tab</a></div>`;
                         imageContainer.appendChild(noteDiv);
                     }
-
                 } catch (error) {
-                    console.error('Error embedding Google Images:', error);
-
-                    // If embedding fails, provide a direct link
                     const googleImagesUrl = `https://www.google.com/search?q=${encodeURIComponent(`${artist} artist artwork`)}&tbm=isch`;
-
-                    imageContainer.innerHTML = `
-                        <div class="image-placeholder">
-                            <div style="margin-bottom: 20px; color: var(--secondary-color);">
-                                Unable to embed Google Images for "${artist}".
-                            </div>
-                            <button id="googleImagesRedirectBtn" class="secondary" style="margin-top: 10px;">
-                                Search for "${artist}" on Google Images
-                            </button>
-                        </div>
-                    `;
-
-                    // Add event listener to the new button
-                    document.getElementById('googleImagesRedirectBtn').addEventListener('click', () => {
-                        window.open(googleImagesUrl, '_blank');
-                    });
+                    imageContainer.innerHTML = `<div class="image-placeholder"><div style="margin-bottom:20px;">Unable to embed Google Images for "${artist}".</div><button id="googleImagesRedirectBtn" class="secondary">Search for "${artist}" on Google Images</button></div>`;
+                    document.getElementById('googleImagesRedirectBtn').addEventListener('click', () => window.open(googleImagesUrl, '_blank'));
                 }
             }
         }
 
-        // Go back to previous artist
+        function searchGoogleImages() {
+            const artist = currentArtist;
+            if (artist && artist !== 'Click to discover an artist') window.open(`https://www.google.com/search?q=${encodeURIComponent(`${artist} artist artwork`)}&tbm=isch`, '_blank');
+        }
+
+        // ---- History ----
         function goBackToPreviousArtist() {
             if (history.length > 1) {
                 const previousArtist = history[1];
-                // Rearrange history - move the previous artist to the front
                 history.splice(1, 1);
                 history.unshift(previousArtist);
                 persistHistory();
@@ -812,94 +604,49 @@
                 showArtist(previousArtist, { addHistory: false });
             }
         }
-
-        function persistHistory() {
-            try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
-        }
-
-        // Add artist to history
+        function persistHistory() { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {} }
         function addToHistory(artist) {
-            // Don't add duplicates - if it exists, remove it first
-            const existingIndex = history.indexOf(artist);
-            if (existingIndex !== -1) {
-                history.splice(existingIndex, 1);
-            }
-
-            // Add to front of history
+            const i = history.indexOf(artist);
+            if (i !== -1) history.splice(i, 1);
             history.unshift(artist);
-
-            // Limit history size
-            if (history.length > MAX_HISTORY) {
-                history.pop();
-            }
-
+            if (history.length > MAX_HISTORY) history.pop();
             persistHistory();
-
-            // Update history UI
             updateHistoryUI();
-
-            // Enable/disable back button
             updateBackButtonStates();
         }
-
-        // Update history UI
         function updateHistoryUI() {
             historyList.innerHTML = '';
-
             history.forEach(artist => {
-                const historyItem = document.createElement('button');
-                historyItem.className = 'history-item';
-                historyItem.type = 'button';
-                historyItem.textContent = artist;
-                historyItem.addEventListener('click', () => showArtist(artist));
-                historyList.appendChild(historyItem);
+                const b = document.createElement('button');
+                b.className = 'history-item'; b.type = 'button'; b.textContent = artist;
+                b.addEventListener('click', () => showArtist(artist));
+                historyList.appendChild(b);
             });
         }
+        function updateBackButtonStates() {
+            const dis = history.length <= 1;
+            backBtn.disabled = dis;
+            document.getElementById('mobileBackBtn').disabled = dis;
+        }
 
-        // Event listeners
+        // ---- Wiring ----
         generateBtn.addEventListener('click', generateRandomArtist);
         searchBtn.addEventListener('click', searchGoogleImages);
         backBtn.addEventListener('click', goBackToPreviousArtist);
         shareBtn.addEventListener('click', shareCurrentArtist);
-        document.getElementById('aotdBtn').addEventListener('click', () => {
-            const a = dailyArtist();
-            if (a) showArtist(a);
-        });
-
-        // Mobile button event listeners
+        moreLikeBtn.addEventListener('click', moreLikeThis);
+        document.getElementById('aotdBtn').addEventListener('click', () => { const a = dailyArtist(); if (a) showArtist(a); });
         document.getElementById('mobileGenerateBtn').addEventListener('click', generateRandomArtist);
         document.getElementById('mobileSearchBtn').addEventListener('click', searchGoogleImages);
         document.getElementById('mobileBackBtn').addEventListener('click', goBackToPreviousArtist);
         document.getElementById('mobileShareBtn').addEventListener('click', shareCurrentArtist);
 
-        // Add keyboard shortcuts
         document.addEventListener('keydown', function(event) {
-            // Prevent keyboard shortcuts when user is typing in an input field
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                return;
-            }
-
-            // Space bar to discover a new random artist
-            if (event.code === 'Space') {
-                event.preventDefault(); // Prevent page scrolling
-                generateRandomArtist();
-            }
-
-            // Backspace to go back to previous artist
-            if (event.code === 'Backspace' && !backBtn.disabled) {
-                event.preventDefault(); // Prevent browser back navigation
-                goBackToPreviousArtist();
-            }
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') return;
+            if (event.code === 'Space') { event.preventDefault(); generateRandomArtist(); }
+            if (event.code === 'Backspace' && !backBtn.disabled) { event.preventDefault(); goBackToPreviousArtist(); }
         });
 
-        // Update back button states (both desktop and mobile)
-        function updateBackButtonStates() {
-            const isDisabled = history.length <= 1;
-            backBtn.disabled = isDisabled;
-            document.getElementById('mobileBackBtn').disabled = isDisabled;
-        }
-
-        // Initialize
         fetchData();
     </script>
 </body>

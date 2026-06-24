@@ -177,7 +177,7 @@
         .bio-card .bio-link { font-size: 0.85rem; color: var(--primary-color); font-weight: 600; text-decoration: none; }
         .bio-card .bio-link:hover { text-decoration: underline; }
 
-        .button-container { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .button-container { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin: 0 0 1.25rem; padding: 0.6rem 0; position: sticky; top: 0; z-index: 60; background: var(--card); }
 
         button {
             background-color: var(--primary-color); color: white; border: none;
@@ -319,15 +319,15 @@
         </div>
 
         <div class="artist-container">
-            <h1 class="artist-name" id="artistName" aria-live="polite">Click to discover an artist</h1>
-            <div class="context-line" id="contextLine"></div>
-
             <div class="button-container">
                 <button id="backBtn" class="secondary" disabled>Go Back</button>
                 <button id="generateBtn">Discover Random Artist</button>
                 <button id="shareBtn" class="secondary">🔗 Share</button>
                 <button id="searchBtn" class="secondary">Search on Google Images</button>
             </div>
+
+            <h1 class="artist-name" id="artistName" aria-live="polite">Click to discover an artist</h1>
+            <div class="context-line" id="contextLine"></div>
 
             <div class="bio-card" id="bioCard" style="display:none"></div>
 
